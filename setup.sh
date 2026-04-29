@@ -16,6 +16,6 @@ SCRIPT_DIR="$(realpath "$(dirname "$0")")"
 
 echo "Stowing configuration files..."
 mkdir -p "$HOME/.config/" "$HOME/.local"
-stow --restow -d "$SCRIPT_DIR" -t ~/.config config # stow config/ to ~/.config/
-stow --restow -d "$SCRIPT_DIR" -t ~ home # stow home/ to ~/
-stow --restow -d "$SCRIPT_DIR" -t ~/.local local # stow local/ to ~/.local/
+safe_stow "$SCRIPT_DIR" "$HOME/.config" config
+safe_stow "$SCRIPT_DIR" "$HOME" home
+safe_stow "$SCRIPT_DIR" "$HOME/.local" local

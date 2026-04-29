@@ -6,7 +6,7 @@ safe_stow() {
     local package="$3"
     local package_path="$stow_dir/$package"
 
-    shopt -s nullglob
+    shopt -s nullglob dotglob
     for entry in "$package_path"/*; do
         local name="$(basename "$entry")"
         local target_path="$target_dir/$name"
@@ -16,7 +16,7 @@ safe_stow() {
             mv "$target_path" "${target_path}.backup"
         fi
     done
-    shopt -u nullglob
+    shopt -u nullglob dotglob
 
     stow --restow -d "$stow_dir" -t "$target_dir" "$package"
 }

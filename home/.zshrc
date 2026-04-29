@@ -58,7 +58,7 @@ bindkey -e # force emacs mode (i.e. <C-w> = delete word, <C-e> = end of line, <C
 # ===============================
 # Plugin Management (Antidote)
 # ===============================
-source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
+source "$(brew --prefix)/opt/antidote/share/antidote/antidote.zsh"
 antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
 
 # ===============================

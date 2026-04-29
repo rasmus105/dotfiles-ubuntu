@@ -1,5 +1,10 @@
 #!/bin/bash
 function install_homebrew() {
+    if command -v brew &> /dev/null; then
+        echo "Homebrew is already installed."
+        return
+    fi
+
     if sudo -n true 2>/dev/null; then
         echo "Passwordless sudo detected, proceeding..."
         NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"

@@ -1,5 +1,3 @@
-[ -f "$HOME/.dotfiles_env" ] && source "$HOME/.dotfiles_env"
-
 # ===============================
 # History Configuration
 # ===============================
@@ -13,29 +11,18 @@ setopt SHARE_HISTORY         # Share history between sessions
 setopt HIST_VERIFY           # Show command before executing from history
 
 # ===============================
-# Path Configuration
-# ===============================
-# wmname LG3D  # Needed for Ghidra, Maple, and other Java-based software
-
-# ===============================
-# SSH
-# ===============================
-
-ssh-add ~/.ssh/bitbucket
-
-# ===============================
 # Exports
 # ===============================
 # DOTFILES_DIR will be set during installation
 # export DOTFILES_DIR="$HOME/.dotfiles"
 
-export PATH="$HOME/.cargo/bin:$HOME/.local/bin:/Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin:$PATH"
+export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 export MANPAGER="nvim +Man!" # use neovim for man pages.
 export EDITOR="nvim" # some applications such as Yazi use this variable for determining editor
 export TERM=xterm-256color
-export ARM_NONE_EABI_TOOLCHAIN_PATH="/Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi"
-export CMAKE_PREFIX_PATH="/opt/homebrew/opt/llvm"
 # ===============================
 # Aliases
 # ===============================
@@ -49,10 +36,6 @@ ls() { # better ls command
     command eza "$@" 
 }
 
-# Specific
-alias clear_outputs='for i in {0..10}; do hyprctl output remove HEADLESS-$i; done'
-alias rtouch='sudo modprobe -r hid_multitouch && sudo modprobe hid_multitouch' # fixing issue with touchpad.
-
 # Change cursor shape in Neovim terminal
 if [ -n "$NVIM_LOG_FILE" ]; then
   # Use escape codes to set cursor style
@@ -64,6 +47,7 @@ if [ -n "$NVIM_LOG_FILE" ]; then
   # 6 for steady bar (I-beam)
   printf '\033[5 q'
 fi
+
 # ===============================
 # Keybindings & Zoxide Integration
 # ===============================
@@ -173,4 +157,3 @@ __set_title
 
 # Update when changing directories.
 add-zsh-hook chpwd __set_title
-

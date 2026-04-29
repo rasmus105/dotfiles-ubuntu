@@ -7,7 +7,7 @@ brew "fzf"
 brew "gh"
 brew "hyperfine"
 brew "lazygit"
-brew "neovim", args: ["HEAD"]
+brew "neovim"
 brew "ripgrep"
 brew "rustup"
 brew "scc"

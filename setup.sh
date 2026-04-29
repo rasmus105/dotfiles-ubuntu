@@ -18,4 +18,4 @@ echo "Stowing configuration files..."
 mkdir -p "$HOME/.config/" "$HOME/.local"
 safe_stow "$SCRIPT_DIR" "$HOME/.config" config
 safe_stow "$SCRIPT_DIR" "$HOME" home
-safe_stow "$SCRIPT_DIR" "$HOME/.local" local
+# safe_stow "$SCRIPT_DIR" "$HOME/.local" local

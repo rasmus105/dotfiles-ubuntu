@@ -1,3 +1,4 @@
+#!/bin/bash
 function install_homebrew() {
     if sudo -n true 2>/dev/null; then
         echo "Passwordless sudo detected, proceeding..."

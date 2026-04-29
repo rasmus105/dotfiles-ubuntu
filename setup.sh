@@ -1,4 +1,5 @@
-set -euo
+#!/bin/bash
+set -eu
 
 source utils.sh
 

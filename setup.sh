@@ -6,11 +6,11 @@ source utils.sh
 echo "Installing homebrew..."
 install_homebrew
 
-# temporarily set PATH. Stow iwll
+# temporarily set PATH. Stow will persist it.
 export PATH="/home/linuxbrew/.linuxbrew/bin/:$PATH"
 
 echo "Installing packages with homebrew..."
-brew bundle # install all packages from Brewfile
+install_brew_bundle
 
 SCRIPT_DIR="$(realpath "$(dirname "$0")")"
 

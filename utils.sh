@@ -40,4 +40,7 @@ function install_homebrew() {
     fi
 }
 
-
+function install_brew_bundle() {
+    brew trust jstkdng/programs
+    brew bundle
+}

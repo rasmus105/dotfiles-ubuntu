@@ -3,129 +3,96 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = ","
 vim.o.title = true
 
-opt.wrap = false          -- don't wrap by default
-opt.number = false        -- show line numbers
-opt.relativenumber = true -- show relative line numbers
-opt.cursorline = false    -- don't highlight current line
+opt.wrap = false
+opt.number = false
+opt.relativenumber = true
+opt.cursorline = false
 opt.scrolloff = 8
-
 opt.statuscolumn = [[%s%C%=%{v:relnum == 0 ? '' : v:relnum} ]]
 opt.numberwidth = 1
 
--- Search
 opt.ignorecase = true
-opt.smartcase = true -- case sensitive if uppercase in search
-opt.hlsearch = true  -- highlight search results
-opt.incsearch = true -- Show matches as you type
+opt.smartcase = true
+opt.hlsearch = true
+opt.incsearch = true
 
--- Indentation
 opt.tabstop = 4
 opt.softtabstop = 4
 opt.shiftwidth = 4
-opt.expandtab = true   -- Use spaces instead of tabs
-opt.smartindent = true -- Smart auto-indenting
-opt.autoindent = true  -- Copy indent from current line
+opt.expandtab = true
+opt.smartindent = true
+opt.autoindent = true
 
--- Visual settings
-opt.termguicolors = true  -- Enable 24-bit colors
-opt.signcolumn = "auto"   -- Always show sign column
-opt.showmatch = true      -- Highlight matching brackets
-opt.matchtime = 2         -- How long to show matching bracket
-opt.cmdheight = 1         -- Command line height
-opt.showmode = false      -- Don't show mode in command line
-opt.pumheight = 10        -- Popup menu height
-opt.pumblend = 10         -- Popup menu transparency
-opt.winblend = 0          -- Floating window transparency
+opt.termguicolors = true
+opt.signcolumn = "auto"
+opt.showmatch = true
+opt.matchtime = 2
+opt.cmdheight = 1
+opt.showmode = false
+opt.pumheight = 10
+opt.pumblend = 10
+opt.winblend = 0
 opt.completeopt = "menu,menuone,noselect"
-opt.conceallevel = 0      --
-opt.concealcursor = ""    -- Don't hide cursor line markup
-opt.synmaxcol = 300       -- Syntax highlighting limit
-opt.ruler = false         -- Disable the default ruler
-opt.virtualedit = "block" -- Allow cursor to move where there is no text in visual block mode
-opt.winminwidth = 5       -- Minimum window width
-opt.winborder = "none"    -- Show border around windows
+opt.conceallevel = 0
+opt.concealcursor = ""
+opt.synmaxcol = 300
+opt.ruler = false
+opt.virtualedit = "block"
+opt.winminwidth = 5
+opt.winborder = "none"
 
--- File handling
-opt.backup = false                            -- Don't create backup files
-opt.writebackup = false                       -- Don't create backup before writing
-opt.swapfile = false                          -- Don't create swap files
-opt.undofile = true                           -- Persistent undo
+opt.backup = false
+opt.writebackup = false
+opt.swapfile = false
+opt.undofile = true
 opt.undolevels = 10000
-opt.undodir = vim.fn.expand("~/.vim/undodir") -- Undo directory
-opt.updatetime = 300                          -- Faster completion
-opt.timeoutlen = 300                          -- Lower than default (1000) to quickly trigger which-key
-opt.ttimeoutlen = 0                           -- Key code timeout
-opt.autoread = true                           -- Auto reload files changed outside vim
-opt.autowrite = true                          -- Auto save
+opt.undodir = vim.fn.expand("~/.vim/undodir")
+opt.updatetime = 300
+opt.timeoutlen = 150
+opt.ttimeoutlen = 0
+opt.autoread = true
+opt.autowrite = true
 
--- Behavior Settings
-opt.hidden = true                  -- Allow hidden buffers
-opt.errorbells = false             -- No error bells
-opt.backspace = "indent,eol,start" -- Better backspace behavior
-opt.autochdir = false              -- Don't auto change directory
-opt.path:append("**")              -- include subdirectories in search
-opt.mouse = "a"                    -- Enable mouse support
+opt.hidden = true
+opt.errorbells = false
+opt.backspace = "indent,eol,start"
+opt.autochdir = false
+opt.path:append("**")
+opt.mouse = "a"
 opt.mousescroll = "ver:1,hor:1"
--- opt.clipboard = vim.env.SSH_TTY and '' or 'unnamedplus' -- Sync with system clipboard
-opt.modifiable = true  -- Allow buffer modifications
-opt.encoding = "UTF-8" -- Set encoding
+opt.modifiable = true
+opt.encoding = "UTF-8"
 
--- Folding settings
 opt.smoothscroll = true
-opt.foldlevel = 99 -- Start with all folds open
-vim.wo.foldmethod = "expr"
-vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-opt.formatoptions = "jcroqlnt" -- default: tcqj
+opt.foldlevel = 99
+opt.formatoptions = "jcroqlnt"
 opt.grepformat = "%f:%l:%c:%m"
-opt.grepprg = "rg --vimgrep"   -- use ripgrep instead of standard grep
+opt.grepprg = "rg --vimgrep"
 
--- Split behavior
-opt.splitbelow = true -- Horizontal splits go below
-opt.splitright = true -- Vertical splits go right
-opt.splitkeep = "screen"
+opt.splitbelow = true
+opt.splitright = true
+opt.splitkeep = "cursor"
 
--- Command-line completion
 opt.wildmenu = true
 opt.wildmode = "longest:full,full"
 opt.wildignore:append({ "*.o", "*.obj", "*.pyc", "*.class", "*.jar" })
 
--- Better diff options
 opt.diffopt:append("linematch:60")
 
--- Performance improvements
 opt.redrawtime = 10000
 opt.maxmempattern = 20000
 
--- Create undo directory if it doesn't exist
 local undodir = vim.fn.expand("~/.vim/undodir")
 if vim.fn.isdirectory(undodir) == 0 then
     vim.fn.mkdir(undodir, "p")
 end
 
 opt.laststatus = 3
-opt.list = false -- Show some invisible characters (tabs...
+opt.list = false
 
-vim.diagnostic.config({
-    virtual_text = {
-        severity = nil,
-        source = false,
-        format = function(diagnostic)
-            local severity = vim.diagnostic.severity[diagnostic.severity]
-            local icon = ({
-                HINT = " ",
-                INFO = " ",
-                WARN = " ",
-                ERROR = " ",
-            })[severity] or "●"
-
-            return string.format("%s %s", icon, diagnostic.message)
-        end,
-        prefix = "",
-        suffix = "",
-        spacing = 1,
-    },
-    signs = false, -- Remove sign column
-    underline = true,
-    update_in_insert = false,
-    severity_sort = true,
-})
+local option_modules = vim.fn.readdir(vim.fn.stdpath("config") .. "/lua/config/options", [[v:val =~ '\.lua$']])
+table.sort(option_modules)
+for _, file in ipairs(option_modules) do
+    local module = file:gsub("%.lua$", "")
+    require("config.options." .. module)
+end

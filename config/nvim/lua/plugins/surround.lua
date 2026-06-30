@@ -1,13 +1,19 @@
-require('mini.surround').setup({
-    mappings = {
-        add = 'zh',       -- Add surrounding in Normal and Visual modes
-        delete = 'ds',    -- Delete surrounding
-        replace = 'zr',   -- Replace surrounding
-        find = '',        -- Find surrounding (to the right)
-        find_left = '',   -- Find surrounding (to the left)
-        highlight = '',   -- Highlight surrounding
+local lazy = require("config.lazy")
 
-        suffix_last = '', -- Suffix to search with "prev" method
-        suffix_next = '', -- Suffix to search with "next" method
-    }
-})
+local function setup()
+    lazy.packadd("mini.surround")
+    require("mini.surround").setup({
+        mappings = {
+            add = "zh",
+            delete = "ds",
+            replace = "zr",
+            find = "",
+            find_left = "",
+            highlight = "",
+            suffix_last = "",
+            suffix_next = "",
+        },
+    })
+end
+
+lazy.on_vimenter(setup)

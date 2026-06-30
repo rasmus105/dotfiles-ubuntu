@@ -1,91 +1,84 @@
 local map = vim.keymap.set
+local lazy = require("config.lazy")
 
-require("fzf-lua").setup({
-    winopts = {
-        fullscreen = true,
-    },
-    keymap = {
-        builtin = {
-            true,
-            ["<C-d>"] = "preview-half-page-down",
-            ["<C-u>"] = "preview-half-page-up",
+local M = {}
+
+M.setup = lazy.once("fzf-lua", function()
+    lazy.packadd("fzf-lua")
+
+    local fzf = require("fzf-lua")
+    fzf.setup({
+        previewers = {
+            builtin = {
+                extensions = {
+                    png = { "chafa", "{file}" },
+                    jpg = { "chafa", "{file}" },
+                    jpeg = { "chafa", "{file}" },
+                    webp = { "chafa", "{file}" },
+                    gif = { "chafa", "{file}" },
+                    bmp = { "chafa", "{file}" },
+                    tif = { "chafa", "{file}" },
+                    tiff = { "chafa", "{file}" },
+                    svg = { "chafa", "{file}" },
+                },
+            },
         },
-        fzf = {
-            true,
-            ["ctrl-d"] = "preview-half-page-down",
-            ["ctrl-u"] = "preview-half-page-up",
-            ["ctrl-q"] = "select-all+accept",
+        files = {
+            previewer = "builtin",
         },
-    },
-})
+        buffers = {
+            previewer = "builtin",
+        },
+        winopts = {
+            fullscreen = true,
+        },
+        keymap = {
+            builtin = {
+                true,
+            },
+            fzf = {
+                true,
+                ["ctrl-n"] = "down",
+                ["ctrl-p"] = "up",
+                ["ctrl-d"] = "page-down",
+                ["ctrl-u"] = "page-up",
+                ["ctrl-f"] = "forward-char",
+                ["ctrl-b"] = "backward-char",
+                ["ctrl-q"] = "select-all+accept",
+            },
+        },
+    })
 
-local small_window = {
-    fullscreen = false,
-    height = 0.4,
-    width = 0.2,
-    row = 0.5,
-    col = 0.5,
-}
+    return fzf
+end)
 
--- Find files
--- fff is currently lacking some functionality such as full screen and next/prev keybindings
--- map('n', '\\f', function() require('fff').find_files() end,
---     { desc = 'FFFind files' })
-map("n", "\\f", function()
-    require("fzf-lua").files()
-end, { desc = "Find files" })
+local small_window = { fullscreen = false, height = 0.4, width = 0.2, row = 0.5, col = 0.5 }
 
--- Grep
-map("n", "\\w", function()
-    require("fzf-lua").live_grep()
-end, { desc = "Grep words" })
+local function fzf_call(method, opts)
+    return function()
+        M.setup()[method](opts)
+    end
+end
 
--- Find diagnostics
-map("n", "\\d", function()
-    require("fzf-lua").diagnostics_workspace()
-end, { desc = "Diagnostics" })
+lazy.on_cmd("FzfLua", M.setup)
 
--- Search through open buffers
-map("n", "\\b", function()
-    require("fzf-lua").buffers()
-end, { desc = "Diagnostics" })
-
--- Fuzzy find quick fix list
-map("n", "\\q", function()
-    require("fzf-lua").quickfix()
-end, { desc = "Quickfix list" })
-
--- Fuzzy find git diff
-map("n", "\\g", function()
-    require("fzf-lua").git_diff()
-end, { desc = "Current git diff" })
-
--- Fuzzy find buffer git commits (file history)
-map("n", "\\h", function()
-    require("fzf-lua").git_bcommits()
-end, { desc = "Commit history for buffer" })
-
--- Stdlib
+map("n", "\\f", fzf_call("files"), { desc = "Find files" })
+map("n", "\\w", fzf_call("live_grep"), { desc = "Grep words" })
+map("n", "\\d", fzf_call("diagnostics_workspace"), { desc = "Diagnostics" })
+map("n", "\\b", fzf_call("buffers"), { desc = "Buffers" })
+map("n", "\\q", fzf_call("quickfix"), { desc = "Quickfix list" })
+map("n", "\\g", fzf_call("git_diff"), { desc = "Current git diff" })
+map("n", "\\h", fzf_call("git_bcommits"), { desc = "Commit history for buffer" })
 map("n", "\\s", function()
     require("config.stdlib").search()
 end, { desc = "Search language stdlib" })
-
--- Fuzzy find colorschemes
 map("n", "\\c", function()
-    require("fzf-lua").colorschemes({
+    M.setup().colorschemes({
         winopts = small_window,
     })
 end, { desc = "Fuzzy find colorschemes" })
+map("n", "gw", fzf_call("grep_cword"), { desc = "Grep for word cursor is on" })
+map("n", "gr", fzf_call("lsp_references"), { desc = "LSP References (fzf-lua)", nowait = true })
+map("n", "gd", fzf_call("lsp_definitions"), { desc = "LSP Definitions (fzf-lua)" })
 
--- Grep word on cursor
-map("n", "gw", function()
-    require("fzf-lua").grep_cword()
-end, { desc = "Grep for word cursor is on" })
-
-map("n", "gr", function()
-    require("fzf-lua").lsp_references()
-end, { desc = "LSP References (fzf-lua)" })
-
-map("n", "gd", function()
-    require("fzf-lua").lsp_definitions()
-end, { desc = "LSP Definitions (fzf-lua)" })
+return M

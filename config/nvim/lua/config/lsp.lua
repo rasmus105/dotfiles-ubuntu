@@ -1,32 +1,6 @@
 local map = vim.keymap.set
+local lazy = require("config.lazy")
 
-require("mason").setup()
-require("mason-lspconfig").setup({
-    automatic_enable = {
-        exclude = {
-            -- using neovim plugin to extend rust LSP capabilities, and it will
-            -- handle starting rust analyzer.
-            "rust_analyzer",
-        },
-    },
-})
-require("mason-tool-installer").setup({
-    ensure_installed = {
-        "rust_analyzer", -- Rust language server
-        "clangd",        -- C/C++ language server
-        "lua_ls",        -- Lua language server
-        "zls",           -- Zig language server
-        "tinymist",      -- Typst language server
-        "marksman",      -- Markdown language server
-
-        "clang-format",  -- C/C++ formatter
-        "stylua",        -- Lua formatter
-        "shellcheck",    -- Shell linter
-        "shfmt",         -- Shell formatter
-    },
-})
-
--- Global auto-format toggle (add this before your LSP config)
 vim.g.autoformat = true
 
 local function toggle_autoformat()
@@ -35,44 +9,51 @@ local function toggle_autoformat()
     print("Auto-formatting " .. status)
 end
 
-vim.keymap.del("n", "grr")
-vim.keymap.del("n", "grn")
-vim.keymap.del("n", "gra")
-vim.keymap.del("n", "gri")
-vim.keymap.del("n", "grt")
+for _, key in ipairs({ "grr", "grn", "gra", "gri", "grt", "grx" }) do
+    pcall(vim.keymap.del, "n", key)
+end
 
--- LSP Keymaps (apply to all LSP servers)
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("UserLspConfig", {}),
     callback = function(ev)
         local opts = { buffer = ev.buf, nowait = true }
+        local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
-        -- Toggle keymaps
+        if client and client.name == "tinymist" then
+            vim.schedule(function()
+                if vim.api.nvim_buf_is_valid(ev.buf) and vim.bo[ev.buf].filetype == "typst" then
+                    vim.bo[ev.buf].formatexpr = ""
+                end
+            end)
+        end
+
         map("n", "<leader>te", function()
             vim.diagnostic.enable(not vim.diagnostic.is_enabled())
         end, { buffer = ev.buf, desc = "Toggle Diagnostics" })
         map("n", "<leader>tf", toggle_autoformat, { buffer = ev.buf, desc = "Toggle auto-format" })
 
-        -- Navigation
         map("n", "K", vim.lsp.buf.hover, opts)
         map("n", "gk", vim.lsp.buf.signature_help, opts)
         map("n", "gD", vim.lsp.buf.declaration, opts)
         map("n", "gi", vim.lsp.buf.implementation, opts)
-        -- map('n', 'gd', vim.lsp.buf.definition, opts) -- using fzf-lua for this
-        -- map('n', 'gr', vim.lsp.buf.references, opts) -- using fzf-lua for this
 
-        -- Code actions
         map("n", "<leader>ca", vim.lsp.buf.code_action, opts)
         map("n", "<leader>cr", vim.lsp.buf.rename, opts)
+        if client and client.name == "zls" then
+            map("n", "<leader>cf", function()
+                vim.lsp.buf.code_action({
+                    context = { only = { "source.fixAll" } },
+                    apply = true,
+                })
+            end, { buffer = ev.buf, desc = "ZLS fix all" })
+        end
         map("n", "<leader>f", function()
             vim.lsp.buf.format({ async = true })
         end, opts)
 
-        -- Diagnostics
-        map("n", "<leader>ch", ":LspClangdSwitchSourceHeader<CR>") -- code action
+        map("n", "<leader>ch", ":LspClangdSwitchSourceHeader<CR>")
         map("n", "gl", vim.diagnostic.open_float, { buffer = ev.buf, desc = "Show diagnostic as float" })
 
-        -- Format on save
         vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = ev.buf,
             callback = function()
@@ -84,104 +65,103 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end,
 })
 
--- Autocompletion
-require("blink.cmp").setup({
-    fuzzy = { implementation = "prefer_rust_with_warning" },
-    -- build = 'cargo build --release',
-    signature = { enabled = true },
-    keymap = {
-        preset = "default",
-        --
-        ["<C-k>"] = { "select_prev", "fallback" },
-        ["<C-j>"] = { "select_next", "fallback" },
+local setup_lsp = lazy.once("lsp", function()
+    lazy.packadd("nvim-lspconfig")
+    lazy.packadd("mason.nvim")
+    lazy.packadd("mason-lspconfig.nvim")
+    lazy.packadd("mason-tool-installer.nvim")
 
-        ["<C-l>"] = { "snippet_forward", "fallback" },
-        ["<C-h>"] = { "snippet_backward", "fallback" },
-
-        ["<C-g>"] = { "accept", "fallback" },
-        ["<C-c>"] = { "cancel", "fallback" },
-
-        -- unbind keybindings that interfer with other keybindings
-        ["<C-e>"] = false,
-        ["<C-a>"] = false,
-        ["<C-f>"] = false,
-        ["<C-b>"] = false,
-
-        ["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
-    },
-
-    appearance = {
-        use_nvim_cmp_as_default = false,
-        nerd_font_variant = "mono",
-    },
-
-    completion = {
-        documentation = {
-            auto_show = true,
-            auto_show_delay_ms = 0,
-            window = {
-                border = "none",
+    require("mason").setup()
+    require("mason-lspconfig").setup({
+        automatic_enable = {
+            exclude = {
+                "julials",
+                "rust_analyzer",
             },
         },
-    },
+    })
+    vim.lsp.enable("julials")
 
-    sources = { default = { "lsp" } },
+    require("mason-tool-installer").setup({
+        ensure_installed = {
+            "clangd",
+            "julials",
+            "lua_ls",
+            "zls",
+            "tinymist",
+            "marksman",
+            "codelldb",
+            "clang-format",
+            "stylua",
+            "shellcheck",
+            "shfmt",
+        },
+    })
 
-    cmdline = {
-        enabled = true,
-        completion = { menu = { auto_show = false } },
+    require("plugins.luasnip").setup()
+    lazy.packadd("blink.cmp")
+
+    require("blink.cmp").setup({
+        fuzzy = { implementation = "prefer_rust_with_warning" },
+        signature = { enabled = true },
+        snippets = { preset = "luasnip" },
         keymap = {
+            preset = "default",
+            ["<C-p>"] = { "select_prev", "fallback" },
+            ["<C-n>"] = { "select_next", "fallback" },
             ["<C-k>"] = { "select_prev", "fallback" },
             ["<C-j>"] = { "select_next", "fallback" },
-
+            ["<C-l>"] = { "snippet_forward", "fallback" },
+            ["<C-h>"] = { "snippet_backward", "fallback" },
             ["<C-g>"] = { "accept", "fallback" },
             ["<C-c>"] = { "cancel", "fallback" },
-
-            -- unbind keybindings that interfer with other keybindings
             ["<C-e>"] = false,
             ["<C-a>"] = false,
             ["<C-f>"] = false,
             ["<C-b>"] = false,
-
-            ["<C-Space>"] = { "show", "fallback" },
+            ["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
         },
-    },
-})
-
----- Language specific configurations ---
-
-vim.lsp.config("lua_ls", {
-    settings = {
-        Lua = {
-            runtime = {
-                version = "LuaJIT",
-            },
-            diagnostics = {
-                globals = {
-                    "vim",
-                    "require",
+        appearance = {
+            use_nvim_cmp_as_default = false,
+            nerd_font_variant = "mono",
+        },
+        completion = {
+            documentation = {
+                auto_show = true,
+                auto_show_delay_ms = 0,
+                window = {
+                    border = "none",
                 },
             },
-            workspace = {
-                library = vim.api.nvim_get_runtime_file("", true),
-            },
-            telemetry = {
-                enable = false,
+        },
+        sources = { default = { "lsp", "snippets" } },
+        cmdline = {
+            enabled = true,
+            completion = { menu = { auto_show = false } },
+            keymap = {
+                ["<C-p>"] = { "select_prev", "fallback" },
+                ["<C-n>"] = { "select_next", "fallback" },
+                ["<C-k>"] = { "select_prev", "fallback" },
+                ["<C-j>"] = { "select_next", "fallback" },
+                ["<C-g>"] = { "accept", "fallback" },
+                ["<C-c>"] = { "cancel", "fallback" },
+                ["<C-e>"] = false,
+                ["<C-a>"] = false,
+                ["<C-f>"] = false,
+                ["<C-b>"] = false,
+                ["<C-Space>"] = { "show", "fallback" },
             },
         },
-    },
-})
+    })
 
-vim.lsp.config("zls", {
-    settings = {
-        enable_build_on_save = true,
-    },
-})
+    vim.schedule(function()
+        if next(vim.lsp._enabled_configs) then
+            vim.cmd.doautoall("nvim.lsp.enable FileType")
+        end
+    end)
+end)
 
--- specific to work project ('gt115')
-vim.lsp.config("clangd", {
-    cmd = {
-        "clangd",
-        "--query-driver=/home/rk105/programming/toolchains/arm-gnu-toolchain-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc",
-    },
-})
+lazy.on_event({ "BufReadPost", "BufNewFile" }, "Lsp", setup_lsp, { once = true, schedule = true })
+lazy.on_event({ "InsertEnter", "CmdlineEnter" }, "LspImmediate", setup_lsp, { once = true })
+
+vim.api.nvim_create_user_command("LspSetup", setup_lsp, { desc = "Load LSP and completion plugins" })
